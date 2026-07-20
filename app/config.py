@@ -25,22 +25,47 @@ class Settings:
     log_level: str
     log_file: Path
 
+    discord_bot_token: str
+    discord_channel_id: int
+    discord_allowed_user_id: int
+
+
+def required_text(name: str) -> str:
+    value = os.getenv(name, "").strip()
+
+    if not value:
+        raise RuntimeError(
+            f"{name}가 설정되지 않았습니다. "
+            f"{ENV_FILE} 파일을 확인하세요."
+        )
+
+    return value
+
+
+def required_int(name: str) -> int:
+    raw_value = required_text(name)
+
+    try:
+        return int(raw_value)
+    except ValueError as exc:
+        raise RuntimeError(
+            f"{name}에는 숫자 ID만 입력해야 합니다. "
+            f"현재 값의 형식을 확인하세요."
+        ) from exc
+
 
 def load_settings() -> Settings:
-    api_key = os.getenv("OPENAI_API_KEY", "").strip()
-    model = os.getenv("OPENAI_MODEL", "gpt-5-mini").strip()
+    api_key = required_text("OPENAI_API_KEY")
+    model = os.getenv("OPENAI_MODEL", "").strip()
     log_level = os.getenv("LOG_LEVEL", "INFO").strip().upper()
-
-    if not api_key:
-        raise RuntimeError(
-            f"OPENAI_API_KEY가 없습니다. {ENV_FILE} 파일을 확인하세요."
-        )
 
     if not model:
         raise RuntimeError(
-            f"OPENAI_MODEL이 없습니다. {ENV_FILE} 파일을 확인하세요."
+            f"OPENAI_MODEL이 설정되지 않았습니다. "
+            f"{ENV_FILE} 파일을 확인하세요."
         )
 
+    # OpenAI Agents SDK가 표준 환경변수에서 키를 읽도록 보장
     os.environ["OPENAI_API_KEY"] = api_key
 
     return Settings(
@@ -48,6 +73,11 @@ def load_settings() -> Settings:
         openai_model=model,
         log_level=log_level,
         log_file=LOG_FILE,
+        discord_bot_token=required_text("DISCORD_BOT_TOKEN"),
+        discord_channel_id=required_int("DISCORD_CHANNEL_ID"),
+        discord_allowed_user_id=required_int(
+            "DISCORD_ALLOWED_USER_ID"
+        ),
     )
 
 
