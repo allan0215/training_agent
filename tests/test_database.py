@@ -32,6 +32,13 @@ class DatabaseFoundationTests(unittest.TestCase):
         self.assertEqual(enabled, 1)
 
     def test_migrations_are_idempotent(self) -> None:
+        expected_migrations = [
+            path.name
+            for path in sorted(
+                MIGRATIONS_DIR.glob("*.sql")
+            )
+        ]
+
         first_run = run_migrations(
             db_path=self.db_path,
             migrations_dir=MIGRATIONS_DIR,
@@ -44,8 +51,9 @@ class DatabaseFoundationTests(unittest.TestCase):
 
         self.assertEqual(
             first_run,
-            ["001_core.sql"],
+            expected_migrations,
         )
+
         self.assertEqual(second_run, [])
 
         with get_connection(self.db_path) as connection:
@@ -63,6 +71,8 @@ class DatabaseFoundationTests(unittest.TestCase):
         self.assertIn("users", tables)
         self.assertIn("source_messages", tables)
         self.assertIn("schema_migrations", tables)
+        self.assertIn("exercises", tables)
+        self.assertIn("locations", tables)
 
     def test_foreign_key_violation_is_rejected(
         self,
