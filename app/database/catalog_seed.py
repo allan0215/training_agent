@@ -12,18 +12,10 @@ from app.database.seeds.catalog_data import (
 )
 
 
-def normalize_alias(value: str) -> str:
-    return " ".join(
-        value.strip().casefold().split()
-    )
-
-
-def detect_language(value: str) -> str:
-    for character in value:
-        if "\uac00" <= character <= "\ud7a3":
-            return "ko"
-
-    return "en"
+from app.catalog.normalization import (
+    detect_language,
+    normalize_alias,
+)
 
 
 def seed_catalog(
