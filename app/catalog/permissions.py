@@ -104,5 +104,5 @@ class CatalogPermissionPolicy:
             actor_discord_id
         ):
             raise CatalogPermissionError(
-                "공용 운동 카탈로그 관리 권한이 없습니다."
+                "CORE_CATALOG_WRITE_NOT_AVAILABLE"
             )
